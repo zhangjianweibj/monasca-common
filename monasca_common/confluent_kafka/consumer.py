@@ -60,11 +60,12 @@ class KafkaConsumer(object):
         self._last_commit = None
 
     def __iter__(self):
+        log.error("enter _iter_ :")
         self._last_commit = datetime.datetime.now()
 
         while True:
             message = self._consumer.poll(timeout=5)
-
+            log.error("messages : %s", message)
             if message is None:
                 time.sleep(0.1)
             elif not message.error():
@@ -78,9 +79,11 @@ class KafkaConsumer(object):
                 raise confluent_kafka.KafkaException(message.error())
 
             if self._commit_callback:
+                log.error("enter cmmit_callback:")
                 time_now = datetime.datetime.now()
                 time_delta = time_now - self._last_commit
                 if time_delta.total_seconds() > self._max_commit_interval:
+                    log.error("enter if case:")
                     self._commit_callback()
 
     def commit(self):
