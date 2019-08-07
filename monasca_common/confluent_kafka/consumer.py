@@ -53,6 +53,11 @@ class KafkaConsumer(object):
                            'default.topic.config':
                                {'auto.offset.reset': 'earliest'}
                            }
+        log.error("consumer_config: %s",consumer_config)
+        
+        if commit_callback is None:
+           log.error("commit call back is none")
+        
         self._commit_callback = commit_callback
         self._max_commit_interval = max_commit_interval
         self._consumer = confluent_kafka.Consumer(consumer_config)
