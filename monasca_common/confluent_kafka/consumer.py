@@ -53,7 +53,6 @@ class KafkaConsumer(object):
                            'default.topic.config':
                                {'auto.offset.reset': 'earliest'}
                            }
-        log.error("consumer_config: %s",consumer_config)
         
         if commit_callback is None:
            log.error("commit call back is none")
@@ -63,7 +62,6 @@ class KafkaConsumer(object):
         self._consumer = confluent_kafka.Consumer(consumer_config)
         self._consumer.subscribe([topic], on_revoke=repartition_callback)
         
-        log.error("topics: %s", topic)
         self._last_commit = None
 
     def __iter__(self):
@@ -72,10 +70,11 @@ class KafkaConsumer(object):
 
         while True:
             message = self._consumer.poll(timeout=5)
-            log.error("messages : %s", message.value())
+ 
             if message is None:
                 time.sleep(0.1)
             elif not message.error():
+                log.info("messages : %s", message.value())
                 yield message.value()
             elif message.error().code() == \
                     confluent_kafka.KafkaError._PARTITION_EOF:
@@ -90,7 +89,7 @@ class KafkaConsumer(object):
                 time_now = datetime.datetime.now()
                 time_delta = time_now - self._last_commit
                 if time_delta.total_seconds() > self._max_commit_interval:
-                    log.error("enter if case:")
+                    log.info("enter if case:")
                     self._commit_callback()
 
     def commit(self):
